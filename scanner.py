@@ -168,6 +168,7 @@ def scan():
     return dict(now=now, wstart=wstart, n_uni=len(uni), n_liquid=sum(1 for u in uni if u[1] >= MIN_QVOL),
                 picks=picks, sigs=sigs, btc=btc)
 
+STRENGTH_ORDER = {"Strong":0,"Medium":1,"Weak":2}
 
 def render(r):
     e = html.escape
@@ -189,6 +190,7 @@ def render(r):
     tf_names = {"4h": "4H", "1h": "1H", "5m": "5m"}
     for tf in ("4h", "1h", "5m"):
         s = sorted([x for x in r["sigs"] if x["tf"] == tf], key=lambda x: x["when"], reverse=True)
+        s.sort(key=lambda x: STRENGTH_ORDER.get(x["strength"], len(STRENGTH_ORDER)))  # stable: newest first within each strength
         window = f"last {FIVE_MIN_FRESH_MIN} min" if tf == "5m" else f"since {r['wstart'].strftime('%d %b %H:%M')}"
         L.append(f"<b>📈 Breakouts {tf_names[tf]}</b> ({window}) — <i>{e(EVIDENCE[tf])}</i>")
         if not s:
